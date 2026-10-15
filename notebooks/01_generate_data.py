@@ -31,6 +31,7 @@ LAST_NAMES = ["Holland", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garc
 CITY_COUNTRY = {"Paris": "FR", "Madrid": "ES", "London": "GB", "Rome": "IT", "Berlin": "DE", "Tokyo": "JP", "New York": "US", "Sydney": "AU", "Melbourne": "AU", "Toronto": "CA", "Vancouver": "CA"}
 COUNTRY_CODE = {"FR": "+33", "ES": "+34", "GB": "+44", "IT": "+39", "DE": "+49", "JP": "+81", "US": "+1", "AU": "+61", "CA": "+1"}
 CITIES = list(CITY_COUNTRY.keys())
+STATUS = ["PENDING", "DELIVERED", "SHIPPED", "CANCELLED"]
 
 # COMMAND ----------
 
@@ -46,6 +47,12 @@ def random_signup_date():
 def random_updated_at():
     """Random timestamp within January 2026."""
     return datetime(2026, 1, 1) + timedelta(minutes=random.randint(0, 60 * 24 * 30))
+
+def random_order_date():
+    """Random date between 2025-01-01 and 2025-12-31."""
+    return date(2025, 1, 1) + timedelta(days=random.randint(0, 364))
+
+
 
 # COMMAND ----------
 
@@ -189,3 +196,80 @@ df_b_check.printSchema()
 # COMMAND ----------
 
 display(dbutils.fs.ls(path_b))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## System C - Orders
+
+# COMMAND ----------
+
+customer_ids_a = [customer["id_cliente"] for customer in customers_a]
+customer_ids_b = [customer["customerId"] for customer in customers_b]
+all_customer_ids = customer_ids_a + customer_ids_b
+
+
+# COMMAND ----------
+
+orders_c = []
+
+for i in range(1, N_ORDERS_C + 1):
+    order_id = f"ORD-{i:06d}"
+    customer_ref = random.choice(all_customer_ids)
+    order_date = random_order_date()
+    amount = round(random.uniform(5, 300), 2)
+    currency = "EUR"
+    status = random.choice(STATUS)
+    updated_at = random_updated_at()
+
+    orders_c.append({
+        "order_id" : order_id, 
+        "customer_ref": customer_ref, 
+        "order_date": order_date, 
+        "amount": amount, 
+        "currency": currency, 
+        "status": status,
+        "updated_at": updated_at
+    })
+
+print(len(orders_c))
+print(orders_c[0])
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### System C - Dataframe
+
+# COMMAND ----------
+
+COLUMNS_C = ["order_id", "customer_ref", "order_date", "amount", "currency", "status", "updated_at"]
+
+df_c = spark.createDataFrame(orders_c).select(*COLUMNS_C)
+
+display(df_c)
+df_c.printSchema()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Write, read, check
+
+# COMMAND ----------
+
+path_c = f"{BASE_PATH}/system_c/{BATCH}"
+
+df_c.coalesce(1).write.mode("overwrite").option("header", True).csv(path_c)
+
+df_c_check = spark.read.option("header", True).csv(path_c)
+display(df_c_check.limit(5))
+print(df_c_check.count())
+df_c_check.printSchema()
+
+# COMMAND ----------
+
+display(dbutils.fs.ls(path_b))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC
