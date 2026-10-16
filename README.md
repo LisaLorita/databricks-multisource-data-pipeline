@@ -37,7 +37,7 @@ src/         Shared config and helpers
 ## Roadmap
 
 - [x] 0. Workspace setup (catalog, schemas, volume, Git folder)
-- [ ] 1. Synthetic data generation
+- [x] 1. Synthetic data generation
 - [ ] 2. Bronze ingestion (FULL)
 - [ ] 3. Silver transformations
 - [ ] 4. Data quality rules and quarantine
