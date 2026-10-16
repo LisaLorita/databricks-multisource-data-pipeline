@@ -31,7 +31,8 @@ LAST_NAMES = ["Holland", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garc
 CITY_COUNTRY = {"Paris": "FR", "Madrid": "ES", "London": "GB", "Rome": "IT", "Berlin": "DE", "Tokyo": "JP", "New York": "US", "Sydney": "AU", "Melbourne": "AU", "Toronto": "CA", "Vancouver": "CA"}
 COUNTRY_CODE = {"FR": "+33", "ES": "+34", "GB": "+44", "IT": "+39", "DE": "+49", "JP": "+81", "US": "+1", "AU": "+61", "CA": "+1"}
 CITIES = list(CITY_COUNTRY.keys())
-STATUS = ["PENDING", "DELIVERED", "SHIPPED", "CANCELLED"]
+ORDER_STATUS = ["PENDING", "DELIVERED", "SHIPPED", "CANCELLED"]
+CURRENCY = ["EUR"]
 
 # COMMAND ----------
 
@@ -105,8 +106,7 @@ df_a.printSchema()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC %md
-# MAGIC ### Write, read, check
+# MAGIC ### System A - Write & verify
 
 # COMMAND ----------
 
@@ -180,7 +180,7 @@ df_b.printSchema()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Write, read, check
+# MAGIC ### System B - Write & verify
 
 # COMMAND ----------
 
@@ -218,18 +218,18 @@ for i in range(1, N_ORDERS_C + 1):
     customer_ref = random.choice(all_customer_ids)
     order_date = random_order_date()
     amount = round(random.uniform(5, 300), 2)
-    currency = "EUR"
-    status = random.choice(STATUS)
+    currency = random.choice(CURRENCY)
+    status = random.choice(ORDER_STATUS)
     updated_at = random_updated_at()
 
     orders_c.append({
-        "order_id" : order_id, 
+        "order_id": order_id, 
         "customer_ref": customer_ref, 
-        "order_date": order_date, 
+        "order_date": order_date.isoformat(), 
         "amount": amount, 
         "currency": currency, 
         "status": status,
-        "updated_at": updated_at
+        "updated_at": updated_at.strftime("%Y-%m-%d %H:%M:%S"),
     })
 
 print(len(orders_c))
@@ -252,7 +252,7 @@ df_c.printSchema()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Write, read, check
+# MAGIC ### System C - Write & verify
 
 # COMMAND ----------
 
@@ -267,9 +267,4 @@ df_c_check.printSchema()
 
 # COMMAND ----------
 
-display(dbutils.fs.ls(path_b))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC
+display(dbutils.fs.ls(path_c))
