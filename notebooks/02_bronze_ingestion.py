@@ -10,7 +10,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ##Config
+# MAGIC ## Config
 
 # COMMAND ----------
 
@@ -32,7 +32,7 @@ from pyspark.sql.types import StructType, StructField, StringType
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## System A - Write & Read schema
+# MAGIC ## System A - Define schema
 
 # COMMAND ----------
 
@@ -44,7 +44,7 @@ schema_a = StructType([
   StructField("telefono", StringType(), True),
   StructField("fecha_alta", StringType(), True),
   StructField("ciudad", StringType(), True),
-  StructField("updated_at", StringType(), True)
+  StructField("updated_at", StringType(), True),
 ])
 
 # COMMAND ----------
@@ -54,6 +54,7 @@ path_a = f"{BASE_PATH}/system_a/{BATCH}"
 df_a_raw = (
     spark.read
     .option("header", True)
+    .option("enforceSchema", False)
     .schema(schema_a)
     .csv(path_a)
 )
@@ -99,5 +100,7 @@ spark.table(table_a).printSchema()
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC DESCRIBE HISTORY workspace.bronze.system_a_customers
+display(spark.sql(f"DESCRIBE HISTORY {table_a}"))
+
+# COMMAND ----------
+
