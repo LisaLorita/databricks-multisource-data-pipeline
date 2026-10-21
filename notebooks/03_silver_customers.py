@@ -5,7 +5,7 @@
 # ///
 # MAGIC %md
 # MAGIC # 03 - Silver ingestion
-# MAGIC Process and prepares data from the bronze tables of systems A, B and C into silver Delta tables.
+# MAGIC Process and prepares data from the bronze tables of systems A and B into silver Delta tables.
 
 # COMMAND ----------
 
@@ -127,12 +127,13 @@ def write_silver(df, table):
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC ## Verification
+table_name = write_silver(df_customers, "customers")
+print(f"{df_customers.count()} rows -> {table_name}")
 
 # COMMAND ----------
 
-
+# MAGIC %md
+# MAGIC ## Verification
 
 # COMMAND ----------
 
