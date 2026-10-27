@@ -88,20 +88,47 @@ print(f"{df_orders.count()} rows -> {table_name}")
 
 # COMMAND ----------
 
+orders = spark.table(f"{SILVER_SCHEMA}.orders").alias("o")
+customers = spark.table(f"{SILVER_SCHEMA}.customers").alias("c")
+
+# COMMAND ----------
+
 duplicates = (
-    df_orders
+    orders
     .groupBy("order_id")
     .count()
     .filter(col("count") > 1)
 )
-print(duplicates.count())
+print("Duplicate order_ids:", duplicates.count())
 
 # COMMAND ----------
 
-df_orders.printSchema()
-display(df_orders.limit(5))
+orders.printSchema()
+display(orders.limit(5))
 
 for c in ["order_date", "amount", "updated_at", "customer_source_system"]:
-    print(c, df_orders.filter(col(c).isNull()).count())
+    print(c, orders.filter(col(c).isNull()).count())
 
-display(df_orders.groupBy("customer_source_system").count())
+display(orders.groupBy("customer_source_system").count())
+
+
+# COMMAND ----------
+
+join_condition = (
+    (col("o.customer_source_system") == col("c.source_system"))
+    & (col("o.customer_source_id") == col("c.source_customer_id"))
+)
+
+# COMMAND ----------
+
+orphan_orders = orders.join(customers, join_condition, "left_anti")
+print("Orphan orders:", orphan_orders.count())
+
+# COMMAND ----------
+
+early_orders = (
+    orders.join(customers, join_condition, "inner")
+    .filter(col("o.order_date") < col("c.signup_date"))
+)
+print("Orders before customer signup:", early_orders.count())
+display(early_orders.select("o.order_id", "o.order_date", "c.source_customer_id", "c.signup_date").limit(10))

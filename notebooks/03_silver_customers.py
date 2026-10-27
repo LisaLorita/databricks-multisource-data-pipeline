@@ -4,7 +4,7 @@
 # environment_version = "6"
 # ///
 # MAGIC %md
-# MAGIC # 03 - Silver ingestion
+# MAGIC # 03 - Silver customers
 # MAGIC Process and prepares data from the bronze tables of systems A and B into silver Delta tables.
 
 # COMMAND ----------
@@ -138,7 +138,7 @@ print(f"{df_customers.count()} rows -> {table_name}")
 # COMMAND ----------
 
 duplicates = (
-    df_customers
+    spark.table(f"{SILVER_SCHEMA}.customers")
     .groupBy("source_system", "source_customer_id")
     .count()
     .filter(col("count") > 1)
